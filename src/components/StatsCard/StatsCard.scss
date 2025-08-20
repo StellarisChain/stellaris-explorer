@@ -1,0 +1,94 @@
+.stats-card {
+  background: $bg-card;
+  border: 1px solid $border-primary;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+  transition: all $transition-normal;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $gradient-card;
+    opacity: 0;
+    transition: opacity $transition-normal;
+  }
+  
+  &:hover {
+    border-color: rgba($primary-purple, 0.3);
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
+}
+
+.stats-card-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.stats-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-md;
+  background: rgba($primary-purple, 0.1);
+  border: 1px solid rgba($primary-purple, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary-purple-light;
+}
+
+.stats-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: $text-secondary;
+  margin: 0;
+}
+
+.stats-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.stats-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: $text-primary;
+  font-family: $font-family-mono;
+  margin-bottom: $spacing-xs;
+  line-height: 1.2;
+}
+
+.stats-card-change {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: 14px;
+  font-weight: 500;
+  
+  &.up {
+    color: $accent-green;
+  }
+  
+  &.down {
+    color: $accent-red;
+  }
+  
+  &.neutral {
+    color: $text-muted;
+  }
+}

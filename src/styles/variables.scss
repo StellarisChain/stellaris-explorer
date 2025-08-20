@@ -1,0 +1,69 @@
+// SCSS Variables inspired by Quasar wallet
+// Color Palette
+$primary-purple: #8b5cf6;
+$primary-purple-dark: #7c3aed;
+$primary-purple-light: #a855f7;
+
+// Background colors
+$bg-primary: #1a1a1a;
+$bg-secondary: #2a2a2a;
+$bg-tertiary: #3a3a3a;
+$bg-card: #2a2a2a;
+
+// Text colors
+$text-primary: #ffffff;
+$text-secondary: #9ca3af;
+$text-muted: #6b7280;
+
+// Accent colors
+$accent-green: #10b981;
+$accent-red: #ef4444;
+$accent-blue: #3b82f6;
+$accent-yellow: #f59e0b;
+
+// Border colors
+$border-primary: #3a3a3a;
+$border-secondary: #4b5563;
+
+// Gradients
+$gradient-primary: radial-gradient(ellipse at top, #1a1a2e 0%, #0f0f23 50%, #000 100%);
+$gradient-secondary: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+$gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+
+// Shadows
+$shadow-sm: 0 2px 10px 0 rgba(60, 60, 90, 0.13), 0 1px 3px 0 rgba(60, 60, 90, 0.10);
+$shadow-md: 0 8px 32px 0 rgba(60, 60, 90, 0.18), 0 2px 8px 0 rgba(60, 60, 90, 0.13);
+$shadow-lg: 0 16px 64px 0 rgba(60, 60, 90, 0.24), 0 4px 16px 0 rgba(60, 60, 90, 0.16);
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// Border radius
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+
+// Breakpoints
+$mobile: 768px;
+$tablet: 1024px;
+$desktop: 1280px;
+
+// Transitions
+$transition-fast: 0.15s cubic-bezier(.4, 0, .2, 1);
+$transition-normal: 0.2s cubic-bezier(.4, 0, .2, 1);
+$transition-slow: 0.3s cubic-bezier(.4, 0, .2, 1);
+
+// Typography
+$font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+$font-family-mono: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Andale Mono', Consolas, monospace;
+
+// Z-index layers
+$z-dropdown: 1000;
+$z-modal: 2000;
+$z-tooltip: 3000;

@@ -1,0 +1,59 @@
+.network-chart {
+  width: 100%;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  
+  @media (max-width: $mobile) {
+    flex-direction: column;
+    gap: $spacing-md;
+    align-items: flex-start;
+  }
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0;
+}
+
+.chart-legend {
+  display: flex;
+  gap: $spacing-lg;
+  
+  @media (max-width: $mobile) {
+    gap: $spacing-md;
+  }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: 14px;
+  color: $text-secondary;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  
+  &.transactions {
+    background: $primary-purple;
+  }
+  
+  &.blocks {
+    background: $accent-green;
+  }
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
+}

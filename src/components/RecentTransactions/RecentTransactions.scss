@@ -1,0 +1,127 @@
+.recent-transactions {
+  width: 100%;
+}
+
+.recent-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.recent-transaction-item {
+  background: rgba($bg-tertiary, 0.3);
+  border: 1px solid $border-primary;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-decoration: none;
+  color: inherit;
+  transition: all $transition-fast;
+  display: block;
+  
+  &:hover {
+    background: rgba($bg-tertiary, 0.5);
+    border-color: rgba($primary-purple, 0.3);
+    transform: translateX(4px);
+  }
+}
+
+.transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.transaction-hash {
+  font-family: $font-family-mono;
+  font-size: 14px;
+  color: $primary-purple-light;
+  font-weight: 600;
+}
+
+.transaction-time {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.transaction-addresses {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.transaction-address {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: 12px;
+}
+
+.address-icon {
+  flex-shrink: 0;
+  
+  &.from {
+    color: $accent-red;
+  }
+  
+  &.to {
+    color: $accent-green;
+  }
+}
+
+.address-text {
+  font-family: $font-family-mono;
+  color: $text-secondary;
+}
+
+.transaction-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transaction-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+  font-family: $font-family-mono;
+}
+
+.transaction-status {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: 12px;
+}
+
+.status-text {
+  font-weight: 500;
+  
+  &.success {
+    color: $accent-green;
+  }
+  
+  &.failed {
+    color: $accent-red;
+  }
+  
+  &.pending {
+    color: $accent-yellow;
+  }
+}
+
+.status-success {
+  color: $accent-green;
+}
+
+.status-failed {
+  color: $accent-red;
+}
+
+.status-pending {
+  color: $accent-yellow;
+}
