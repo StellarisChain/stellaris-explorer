@@ -18,12 +18,12 @@ interface MiningInfo {
 }
 
 // Block Types
-interface BlockOutput {
+export interface BlockOutput {
   address: string;
   amount: string;
 }
 
-interface Transaction {
+export interface Transaction {
   is_coinbase: boolean;
   hash: string;
   block_hash: string;
@@ -32,7 +32,7 @@ interface Transaction {
   inputs?: any[];
 }
 
-interface Block {
+export interface Block {
   id: number;
   hash: string;
   content: string;
@@ -125,12 +125,15 @@ class StellarisAPI {
       if (!latestBlockId || isNaN(latestBlockId)) {
         console.warn('Invalid latest block ID, fetching blocks from offset 0');
         const blocks = await this.getBlocks(0, limit);
+        console.log('Fetched blocks from offset 0:', blocks);
         return blocks.sort((a, b) => b.id - a.id);
       }
       
       // Calculate offset to get the latest blocks
       const offset = Math.max(0, latestBlockId - limit + 1);
       const blocks = await this.getBlocks(offset, limit);
+      
+      console.log('Fetched latest blocks:', blocks);
       
       // Sort by ID descending to show newest first
       return blocks.sort((a, b) => b.id - a.id);
@@ -139,6 +142,7 @@ class StellarisAPI {
       // Fallback: try to get recent blocks without using mining info
       try {
         const blocks = await this.getBlocks(0, limit);
+        console.log('Fallback blocks:', blocks);
         return blocks.sort((a, b) => b.id - a.id);
       } catch (fallbackError) {
         console.error('Fallback block fetch also failed:', fallbackError);
@@ -180,8 +184,10 @@ class StellarisAPI {
   }
 
   // Format helpers
-  formatSTR(amount: string | number): string {
+  formatSTR(amount: string | number | null | undefined): string {
+    if (amount == null) return '0';
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numAmount)) return '0';
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 8,
@@ -192,7 +198,8 @@ class StellarisAPI {
     return new Date(timestamp * 1000).toLocaleString();
   }
 
-  formatTimeAgo(timestamp: number): string {
+  formatTimeAgo(timestamp: number | null | undefined): string {
+    if (timestamp == null) return 'Unknown time';
     const now = Date.now();
     const diff = now - (timestamp * 1000);
     const minutes = Math.floor(diff / 60000);
@@ -230,9 +237,6 @@ export default stellarisAPI;
 // Export types for use in components
 export type {
   MiningInfo,
-  Block,
-  Transaction,
   AddressInfo,
-  SpendableOutput,
-  BlockOutput
+  SpendableOutput
 };

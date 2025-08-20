@@ -9,6 +9,8 @@ interface RecentBlocksProps {
 }
 
 const RecentBlocks: React.FC<RecentBlocksProps> = ({ blocks }) => {
+  console.log('RecentBlocks component received blocks:', blocks);
+  
   const formatHash = (hash: string) => {
     return `${hash.slice(0, 8)}...${hash.slice(-8)}`;
   };
@@ -26,7 +28,7 @@ const RecentBlocks: React.FC<RecentBlocksProps> = ({ blocks }) => {
   return (
     <div className="recent-blocks">
       <div className="recent-blocks-list">
-        {blocks.map((block) => (
+        {blocks.filter(block => block && block.id != null).map((block) => (
           <Link 
             key={block.id} 
             to={`/block/${block.id}`}
@@ -34,18 +36,18 @@ const RecentBlocks: React.FC<RecentBlocksProps> = ({ blocks }) => {
           >
             <div className="block-header">
               <div className="block-height">
-                #{block.id.toLocaleString()}
+                #{block.id?.toLocaleString() || 'Unknown'}
               </div>
               <div className="block-time">
                 <Clock size={14} />
-                {stellarisAPI.formatTimeAgo(block.timestamp)}
+                {block.timestamp ? stellarisAPI.formatTimeAgo(block.timestamp) : 'Unknown time'}
               </div>
             </div>
             
             <div className="block-details">
               <div className="block-hash">
                 <span className="hash-label">Hash:</span>
-                <span className="hash-value">{formatHash(block.hash)}</span>
+                <span className="hash-value">{block.hash ? formatHash(block.hash) : 'Unknown'}</span>
               </div>
               
               <div className="block-meta">
@@ -55,7 +57,7 @@ const RecentBlocks: React.FC<RecentBlocksProps> = ({ blocks }) => {
                 </div>
                 <div className="meta-item">
                   <HardDrive size={14} />
-                  <span>Reward: {stellarisAPI.formatSTR(block.reward)} STR</span>
+                  <span>Reward: {block.reward != null ? stellarisAPI.formatSTR(block.reward) : '0'} STR</span>
                 </div>
               </div>
             </div>

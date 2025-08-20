@@ -7,21 +7,20 @@ import {
   Users, 
   Zap,
   ExternalLink,
-  ArrowUpRight,
-  ArrowDownRight
+  ArrowUpRight
 } from 'lucide-react';
 import SearchWidget from '../../components/SearchWidget/SearchWidget';
 import StatsCard from '../../components/StatsCard/StatsCard';
 import RecentBlocks from '../../components/RecentBlocks/RecentBlocks';
 import RecentTransactions from '../../components/RecentTransactions/RecentTransactions';
 import NetworkChart from '../../components/NetworkChart/NetworkChart';
-import stellarisAPI, { MiningInfo } from '../../services/api';
+import stellarisAPI, { MiningInfo, Block, Transaction } from '../../services/api';
 import './Home.scss';
 
 const Home: React.FC = () => {
   const [miningInfo, setMiningInfo] = useState<MiningInfo | null>(null);
-  const [recentBlocks, setRecentBlocks] = useState<any[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [recentBlocks, setRecentBlocks] = useState<Block[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,10 +36,12 @@ const Home: React.FC = () => {
         
         // Fetch recent blocks
         const blocks = await stellarisAPI.getLatestBlocks(10);
+        console.log('Received blocks in Home component:', blocks);
         setRecentBlocks(blocks);
         
         // Fetch recent transactions
         const transactions = await stellarisAPI.getRecentTransactions(10);
+        console.log('Received transactions in Home component:', transactions);
         setRecentTransactions(transactions);
         
       } catch (err) {

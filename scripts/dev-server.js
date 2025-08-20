@@ -143,24 +143,30 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Serve index.html for all routes (SPA)
 app.get('*', (req, res) => {
   const htmlTemplate = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-  const processedHtml = htmlTemplate.replace(
-    '<script type="module" src="/src/main.tsx"></script>',
-    `<script src="/main.js"></script>
-    <script>
-      // Hot reload WebSocket connection
-      const ws = new WebSocket('ws://localhost:${WS_PORT}');
-      ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        if (message.type === 'reload') {
-          window.location.reload();
-        } else if (message.type === 'error') {
-          console.error('Build error:', message.message);
-        }
-      };
-      ws.onopen = () => console.log('🔄 Hot reload connected');
-      ws.onclose = () => console.log('❌ Hot reload disconnected');
-    </script>`
-  );
+  const processedHtml = htmlTemplate
+    .replace(
+      '<title>Stellaris Explorer</title>',
+      `<title>Stellaris Explorer</title>
+      <link rel="stylesheet" href="/main.css">`
+    )
+    .replace(
+      '<script type="module" src="/src/main.tsx"></script>',
+      `<script src="/main.js"></script>
+      <script>
+        // Hot reload WebSocket connection
+        const ws = new WebSocket('ws://localhost:${WS_PORT}');
+        ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === 'reload') {
+            window.location.reload();
+          } else if (message.type === 'error') {
+            console.error('Build error:', message.message);
+          }
+        };
+        ws.onopen = () => console.log('🔄 Hot reload connected');
+        ws.onclose = () => console.log('❌ Hot reload disconnected');
+      </script>`
+    );
   res.send(processedHtml);
 });
 

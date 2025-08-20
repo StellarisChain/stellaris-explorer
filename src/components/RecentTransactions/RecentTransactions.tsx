@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, ArrowUpRight, ArrowDownRight, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, ArrowDownRight, CheckCircle } from 'lucide-react';
 import stellarisAPI, { Transaction } from '../../services/api';
 import './RecentTransactions.scss';
 
@@ -37,7 +37,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
   return (
     <div className="recent-transactions">
       <div className="recent-transactions-list">
-        {transactions.map((tx) => (
+        {transactions.filter(tx => tx && tx.hash).map((tx) => (
           <Link 
             key={tx.hash} 
             to={`/tx/${tx.hash}`}
@@ -45,11 +45,11 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
           >
             <div className="transaction-header">
               <div className="transaction-hash">
-                {formatHash(tx.hash)}
+                {tx.hash ? formatHash(tx.hash) : 'Unknown'}
               </div>
               <div className="transaction-time">
                 <Clock size={14} />
-                {stellarisAPI.formatTimeAgo(tx.time_mined)}
+                {tx.time_mined ? stellarisAPI.formatTimeAgo(tx.time_mined) : 'Unknown time'}
               </div>
             </div>
             
@@ -63,11 +63,11 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
               </div>
               
               <div className="transaction-outputs">
-                {tx.outputs.map((output, index) => (
+                {(tx.outputs || []).map((output, index) => (
                   <div key={index} className="transaction-output">
                     <ArrowDownRight size={14} className="address-icon to" />
-                    <span className="address-text">{formatAddress(output.address)}</span>
-                    <span className="amount-text">{stellarisAPI.formatSTR(output.amount)} STR</span>
+                    <span className="address-text">{output?.address ? formatAddress(output.address) : 'Unknown'}</span>
+                    <span className="amount-text">{output?.amount ? stellarisAPI.formatSTR(output.amount) : '0'} STR</span>
                   </div>
                 ))}
               </div>
