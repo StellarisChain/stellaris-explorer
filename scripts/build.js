@@ -52,7 +52,12 @@ esbuild.build({
   splitting: false,
   plugins: [
     sassPlugin({
-      loadPaths: ['src/styles'],
+      loadPaths: [path.join(__dirname, '../src/styles')],
+      precompile(source, pathname) {
+        const variablesPath = path.join(__dirname, '../src/styles/variables.scss');
+        const variablesContent = fs.readFileSync(variablesPath, 'utf8');
+        return variablesContent + '\n' + source;
+      },
     }),
   ],
   define: {
