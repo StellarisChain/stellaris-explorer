@@ -29,6 +29,16 @@
     transform: translateY(0);
   }
 
+  // Connected state styling
+  &.connected {
+    background: rgba($primary-purple, 0.2);
+    border-color: $primary-purple;
+    
+    &:hover {
+      background: rgba($primary-purple, 0.3);
+    }
+  }
+
   .quasar-logo {
     display: flex;
     align-items: center;
