@@ -20,13 +20,13 @@ interface MiningInfo {
 // Block Types
 export interface BlockOutput {
   address: string;
-  amount: string;
+  amount: number; // API returns numbers, not strings
 }
 
 export interface Transaction {
   is_coinbase: boolean;
   hash: string;
-  block_hash: string;
+  block_hash?: string;
   time_mined: number;
   outputs: BlockOutput[];
   inputs?: any[];
@@ -37,11 +37,18 @@ export interface Block {
   hash: string;
   content: string;
   address: string;
-  random: string;
+  random: number;
   difficulty: number;
   reward: number;
   timestamp: number;
   transactions?: Transaction[];
+}
+
+// API Response Types for blocks
+interface BlockApiResponse {
+  block: Block;
+  transactions: string[] | null; // Array of transaction hashes
+  full_transactions?: { hash: string; is_coinbase: boolean }[]; // Minimal transaction objects
 }
 
 // Address Info Types
@@ -83,20 +90,50 @@ class StellarisAPI {
 
   // Get blocks with pagination
   async getBlocks(offset: number = 0, limit: number = 10): Promise<Block[]> {
-    return this.get<Block[]>('/get_blocks', { offset, limit });
+    const response = await this.get<BlockApiResponse[]>('/get_blocks', { offset, limit });
+    return response.map(item => ({
+      ...item.block,
+      transactions: [] // We'll need to fetch full transaction details separately if needed
+    }));
   }
 
   // Get specific block by ID with optional full transaction details
   async getBlock(blockId: number, fullTransactions: boolean = true): Promise<Block> {
-    return this.get<Block>('/get_block', { 
+    const response = await this.get<BlockApiResponse>('/get_block', { 
       block: blockId, 
       full_transactions: fullTransactions 
     });
+    
+    const block: Block = {
+      ...response.block,
+      transactions: []
+    };
+    
+    // Fetch full transaction details if requested and available
+    if (fullTransactions && response.full_transactions && response.full_transactions.length > 0) {
+      const fullTransactionPromises = response.full_transactions.map(async (tx) => {
+        try {
+          return await this.getTransaction(tx.hash);
+        } catch (error) {
+          console.warn(`Failed to fetch transaction ${tx.hash}:`, error);
+          return {
+            ...tx,
+            time_mined: block.timestamp,
+            block_hash: block.hash,
+            outputs: []
+          } as Transaction;
+        }
+      });
+      
+      block.transactions = await Promise.all(fullTransactionPromises);
+    }
+    
+    return block;
   }
 
   // Get transaction by hash
   async getTransaction(txHash: string): Promise<Transaction> {
-    return this.get<Transaction>('/get_transaction', { transaction: txHash });
+    return this.get<Transaction>('/get_transaction', { tx_hash: txHash });
   }
 
   // Get address information with transactions
@@ -153,19 +190,20 @@ class StellarisAPI {
 
   async getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
     try {
-      const latestBlocks = await this.getLatestBlocks(5); // Get last 5 blocks
+      const latestBlocks = await this.getLatestBlocks(Math.min(10, limit)); // Get more blocks to find enough transactions
       const transactions: Transaction[] = [];
       
       // Get transactions from latest blocks
       for (const block of latestBlocks) {
-        if (block.transactions) {
-          transactions.push(...block.transactions);
-        } else {
-          // If transactions not included, fetch the block with full transaction details
+        // Fetch the block with full transaction details
+        try {
           const fullBlock = await this.getBlock(block.id, true);
-          if (fullBlock.transactions) {
+          if (fullBlock.transactions && fullBlock.transactions.length > 0) {
             transactions.push(...fullBlock.transactions);
           }
+        } catch (error) {
+          console.warn(`Failed to fetch full block ${block.id}:`, error);
+          // Continue with next block
         }
         
         if (transactions.length >= limit) {
