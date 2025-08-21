@@ -11,10 +11,10 @@ interface ApiResponse<T> {
 // Mining Info Types
 interface MiningInfo {
   difficulty: number;
-  latestblock: number;
-  latesttime: number;
-  reward: number;
-  latestblockhash: string;
+  last_block: Block;
+  pending_transactions: any[];
+  pending_transactions_hashes: string[];
+  merkle_root: string;
 }
 
 // Block Types
@@ -119,7 +119,7 @@ class StellarisAPI {
   async getLatestBlocks(limit: number = 10): Promise<Block[]> {
     try {
       const miningInfo = await this.getMiningInfo();
-      const latestBlockId = miningInfo.latestblock;
+      const latestBlockId = miningInfo.last_block.id;
       
       // Ensure we have valid numbers
       if (!latestBlockId || isNaN(latestBlockId)) {

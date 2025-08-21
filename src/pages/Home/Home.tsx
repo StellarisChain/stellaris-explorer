@@ -62,7 +62,7 @@ const Home: React.FC = () => {
 
   const formatLastBlockTime = () => {
     if (!miningInfo) return 'Loading...';
-    return stellarisAPI.formatTimeAgo(miningInfo.latesttime);
+    return stellarisAPI.formatTimeAgo(miningInfo.last_block.timestamp);
   };
 
   return (
@@ -91,13 +91,13 @@ const Home: React.FC = () => {
             <div className="hero-stats">
               <div className="hero-stat">
                 <span className="hero-stat-value">
-                  {loading ? 'Loading...' : (miningInfo?.latestblock?.toLocaleString() || 'N/A')}
+                  {loading ? 'Loading...' : (miningInfo?.last_block?.id?.toLocaleString() || 'N/A')}
                 </span>
                 <span className="hero-stat-label">Latest Block</span>
               </div>
               <div className="hero-stat">
                 <span className="hero-stat-value">
-                  {loading ? 'Loading...' : `${stellarisAPI.formatSTR(miningInfo?.reward || 0)} STR`}
+                  {loading ? 'Loading...' : `${stellarisAPI.formatSTR(miningInfo?.last_block?.reward || 0)} STR`}
                 </span>
                 <span className="hero-stat-label">Block Reward</span>
               </div>
@@ -118,7 +118,7 @@ const Home: React.FC = () => {
             <StatsCard
               icon={<Activity className="stats-icon" />}
               title="Block Height"
-              value={loading ? 'Loading...' : (miningInfo?.latestblock?.toLocaleString() || 'N/A')}
+              value={loading ? 'Loading...' : (miningInfo?.last_block?.id?.toLocaleString() || 'N/A')}
               change={loading ? '' : formatLastBlockTime()}
               trend="up"
             />
@@ -139,7 +139,7 @@ const Home: React.FC = () => {
             <StatsCard
               icon={<Clock className="stats-icon" />}
               title="Block Reward"
-              value={loading ? 'Loading...' : (miningInfo ? `${stellarisAPI.formatSTR(miningInfo.reward)} STR` : 'N/A')}
+              value={loading ? 'Loading...' : (miningInfo ? `${stellarisAPI.formatSTR(miningInfo.last_block?.reward)} STR` : 'N/A')}
               change="Per block"
               trend="neutral"
             />
