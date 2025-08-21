@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import stellarisAPI, { MiningInfo } from '../../services/api';
 import './SearchWidget.scss';
 
 const SearchWidget: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [miningInfo, setMiningInfo] = useState<MiningInfo | null>(null);
   const navigate = useNavigate();
+
+  // Prefetch mining info to power example values
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const info = await stellarisAPI.getMiningInfo();
+        if (isMounted) setMiningInfo(info);
+      } catch (e) {
+        // Non-blocking; examples just won't show dynamic data
+        console.warn('SearchWidget: failed to fetch mining info', e);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,19 +72,25 @@ const SearchWidget: React.FC = () => {
         <span className="search-examples-label">Try:</span>
         <button 
           className="search-example" 
-          onClick={() => setSearchQuery('123456')}
+          onClick={() => {
+            const latestBlock = miningInfo?.last_block?.id;
+            if (latestBlock != null) setSearchQuery(String(latestBlock));
+          }}
         >
-          Block #123456
+          Block #{miningInfo?.last_block?.id || 'ERROR'}
         </button>
         <button 
           className="search-example" 
-          onClick={() => setSearchQuery('a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456')}
+          onClick={() => {
+            const latestTransaction = miningInfo?.last_block?.hash;
+            if (latestTransaction != null) setSearchQuery(String(latestTransaction));
+          }}
         >
           Transaction
         </button>
         <button 
           className="search-example" 
-          onClick={() => setSearchQuery('STL1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7')}
+          onClick={() => setSearchQuery('DWMVFcRTZ8UMaWr2vsb7XkTmh7zaA57BQaDRGiAKB6qX6')}
         >
           Address
         </button>
