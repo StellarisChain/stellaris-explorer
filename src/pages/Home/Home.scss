@@ -1,5 +1,7 @@
 .home {
   min-height: 100vh;
+  // offset content below the fixed header
+  padding-top: var(--header-height, #{$header-height});
 
   // Error banner
   .error-banner {

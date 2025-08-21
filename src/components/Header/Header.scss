@@ -7,7 +7,9 @@
   background: rgba($bg-primary, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid $border-primary;
-  padding: $spacing-md 0;
+  // expose header height to the document so pages can offset content
+  --header-height: #{$header-height};
+  //padding: calc(var(--header-height) / 2) 0; // keep vertical padding consistent with header height
   
   .container {
     max-width: 1280px;
