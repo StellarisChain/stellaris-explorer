@@ -41,7 +41,7 @@
   flex: 1;
   position: relative;
   z-index: 1;
-  padding-top: $spacing-xl;
+  padding-top: calc($header-height + $spacing-lg);
   padding-bottom: $spacing-xl;
 }
 
