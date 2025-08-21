@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
         <div className="footer-content">
           <div className="footer-section">
             <div className="footer-brand">
-              <div className="footer-logo">⭐</div>
+              <img src="/stellaris-icon.png" alt="Stellaris Logo" className="footer-logo" />
               <div>
                 <h3 className="footer-title">Stellaris Explorer</h3>
                 <p className="footer-description">

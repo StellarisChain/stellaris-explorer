@@ -145,8 +145,8 @@ app.get('*', (req, res) => {
   const htmlTemplate = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
   const processedHtml = htmlTemplate
     .replace(
-      '<title>Stellaris Explorer</title>',
-      `<title>Stellaris Explorer</title>
+      '<title> Explorer | Stellaris</title>',
+      `<title> Explorer | Stellaris</title>
       <link rel="stylesheet" href="/main.css">`
     )
     .replace(

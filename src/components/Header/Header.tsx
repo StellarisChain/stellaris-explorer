@@ -44,7 +44,7 @@ const Header: React.FC = () => {
           {/* Logo and Brand */}
           <Link to="/" className="brand">
             <div className="brand-icon">
-              <div className="stellaris-logo">⭐</div>
+              <img src="/stellaris-icon.png" alt="Stellaris Logo" className="stellaris-logo" />
             </div>
             <div className="brand-text">
               <h1 className="brand-name">Stellaris</h1>

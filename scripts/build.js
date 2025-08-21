@@ -33,10 +33,30 @@ copyPublicAssets(publicDir, distDir);
 
 // Copy and process HTML
 const htmlTemplate = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-const processedHtml = htmlTemplate.replace(
-  '<script type="module" src="/src/main.tsx"></script>',
-  '<script src="/main.js"></script>'
-);
+const processedHtml = htmlTemplate
+    .replace(
+      '<title> Explorer | Stellaris</title>',
+      `<title> Explorer | Stellaris</title>
+      <link rel="stylesheet" href="/main.css">`
+    )
+    .replace(
+      '<script type="module" src="/src/main.tsx"></script>',
+      `<script src="/main.js"></script>
+      <script>
+        // Hot reload WebSocket connection
+        const ws = new WebSocket('ws://localhost:${WS_PORT}');
+        ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === 'reload') {
+            window.location.reload();
+          } else if (message.type === 'error') {
+            console.error('Build error:', message.message);
+          }
+        };
+        ws.onopen = () => console.log('🔄 Hot reload connected');
+        ws.onclose = () => console.log('❌ Hot reload disconnected');
+      </script>`
+    );
 fs.writeFileSync(path.join(distDir, 'index.html'), processedHtml);
 
 // Build with esbuild

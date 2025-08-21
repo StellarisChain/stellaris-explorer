@@ -43,8 +43,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0; // Prevent logo from shrinking
 
     .logo-icon {
       width: 100%;
@@ -65,8 +66,8 @@
     gap: $spacing-xs;
     
     .quasar-logo {
-      width: 18px;
-      height: 18px;
+      width: 28px;
+      height: 28px;
     }
     
     .quasar-text {
@@ -83,8 +84,8 @@
     padding: $spacing-sm;
     
     .quasar-logo {
-      width: 20px;
-      height: 20px;
+      width: 32px;
+      height: 32px;
     }
   }
 }
