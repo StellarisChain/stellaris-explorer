@@ -41,21 +41,7 @@ const processedHtml = htmlTemplate
     )
     .replace(
       '<script type="module" src="/src/main.tsx"></script>',
-      `<script src="/main.js"></script>
-      <script>
-        // Hot reload WebSocket connection
-        const ws = new WebSocket('ws://localhost:${WS_PORT}');
-        ws.onmessage = (event) => {
-          const message = JSON.parse(event.data);
-          if (message.type === 'reload') {
-            window.location.reload();
-          } else if (message.type === 'error') {
-            console.error('Build error:', message.message);
-          }
-        };
-        ws.onopen = () => console.log('🔄 Hot reload connected');
-        ws.onclose = () => console.log('❌ Hot reload disconnected');
-      </script>`
+      `<script src="/main.js"></script>`
     );
 fs.writeFileSync(path.join(distDir, 'index.html'), processedHtml);
 
