@@ -9,7 +9,7 @@
   border-bottom: 1px solid $border-primary;
   // expose header height to the document so pages can offset content
   --header-height: #{$header-height};
-  //padding: calc(var(--header-height) / 2) 0; // keep vertical padding consistent with header height
+  padding: calc(var(--header-height) / 3) 0; // keep vertical padding consistent with header height
   
   .container {
     max-width: 1280px;
