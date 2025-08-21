@@ -1,0 +1,80 @@
+@import '../../styles/variables.scss';
+
+.quasar-interface {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba($bg-secondary, 0.8);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  color: $text-primary;
+  cursor: pointer;
+  transition: all $transition-fast;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  &:hover {
+    background: rgba($bg-secondary, 1);
+    border-color: $primary-purple;
+    transform: translateY(-1px);
+  }
+  
+  &:focus {
+    outline: 2px solid $primary-purple;
+    outline-offset: 2px;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .quasar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+
+    .logo-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: brightness(0) invert(1); // Make logo white to match theme
+    }
+  }
+
+  .quasar-text {
+    white-space: nowrap;
+    font-family: inherit;
+  }
+
+  // Responsive behavior
+  @media (max-width: 768px) {
+    padding: $spacing-sm;
+    gap: $spacing-xs;
+    
+    .quasar-logo {
+      width: 18px;
+      height: 18px;
+    }
+    
+    .quasar-text {
+      font-size: 0.8rem;
+    }
+  }
+
+  // Small screens - show only logo
+  @media (max-width: 480px) {
+    .quasar-text {
+      display: none;
+    }
+    
+    padding: $spacing-sm;
+    
+    .quasar-logo {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Menu, X } from 'lucide-react';
 import NetworkSelector from '../NetworkSelector/NetworkSelector';
+import QuasarInterface from '../QuasarInterface/QuasarInterface';
 import './Header.scss';
 
 const Header: React.FC = () => {
@@ -72,6 +73,9 @@ const Header: React.FC = () => {
 
           {/* Network Selector */}
           <NetworkSelector />
+
+          {/* Quasar Interface */}
+          <QuasarInterface />
 
           {/* Navigation */}
           <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
