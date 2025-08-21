@@ -266,6 +266,78 @@ class StellarisAPI {
     }
     return `${hashRate.toFixed(2)} H/s`;
   }
+
+  // Get network activity data for charting (24 hours)
+  async getNetworkActivity24h(): Promise<{ time: string; transactions: number; blocks: number; hour: number }[]> {
+    try {
+      const miningInfo = await this.getMiningInfo();
+      const latestBlockId = miningInfo.last_block.id;
+      
+      // Calculate 24 hours ago timestamp
+      const now = Date.now() / 1000;
+      const twentyFourHoursAgo = now - (24 * 60 * 60);
+      
+      // Fetch recent blocks - we'll estimate how many blocks we need for 24 hours
+      // Assuming average block time of ~60 seconds, we need about 1440 blocks for 24 hours
+      const estimatedBlocksFor24h = Math.min(2000, latestBlockId);
+      const offset = Math.max(0, latestBlockId - estimatedBlocksFor24h);
+      
+      console.log(`Fetching ${estimatedBlocksFor24h} blocks from offset ${offset} for network activity`);
+      
+      const blocks = await this.getBlocks(offset, estimatedBlocksFor24h);
+      
+      // Filter blocks to last 24 hours
+      const recentBlocks = blocks.filter(block => block.timestamp >= twentyFourHoursAgo);
+      
+      console.log(`Found ${recentBlocks.length} blocks in the last 24 hours`);
+      
+      // Group blocks by hour
+      const hourlyData = new Map<number, { blocks: number; transactions: number }>();
+      
+      // Initialize all 24 hours with zero values
+      for (let i = 0; i < 24; i++) {
+        const hourTimestamp = Math.floor((now - (23 - i) * 3600) / 3600) * 3600;
+        hourlyData.set(hourTimestamp, { blocks: 0, transactions: 0 });
+      }
+      
+      // Process recent blocks and count transactions
+      for (const block of recentBlocks) {
+        const hourTimestamp = Math.floor(block.timestamp / 3600) * 3600;
+        const existing = hourlyData.get(hourTimestamp) || { blocks: 0, transactions: 0 };
+        
+        // For now, assume 1 transaction per block (coinbase)
+        // In the future, you could enhance this by fetching full block details
+        const transactionCount = 1;
+        
+        hourlyData.set(hourTimestamp, {
+          blocks: existing.blocks + 1,
+          transactions: existing.transactions + transactionCount
+        });
+      }
+      
+      // Convert to chart data format
+      const chartPoints = [];
+      const sortedHours = Array.from(hourlyData.keys()).sort((a, b) => a - b);
+      
+      for (const hourTimestamp of sortedHours) {
+        const data = hourlyData.get(hourTimestamp)!;
+        const hour = new Date(hourTimestamp * 1000).getHours();
+        const timeLabel = `${hour.toString().padStart(2, '0')}:00`;
+        
+        chartPoints.push({
+          time: timeLabel,
+          transactions: data.transactions,
+          blocks: data.blocks,
+          hour: hour
+        });
+      }
+      
+      return chartPoints;
+    } catch (error) {
+      console.error('Error fetching network activity:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

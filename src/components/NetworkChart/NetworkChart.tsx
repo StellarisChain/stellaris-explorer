@@ -1,24 +1,92 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import stellarisAPI from '../../services/api';
 import './NetworkChart.scss';
 
-// Mock data for the chart
-const mockData = [
-  { time: '00:00', transactions: 120, blocks: 5 },
-  { time: '02:00', transactions: 180, blocks: 8 },
-  { time: '04:00', transactions: 95, blocks: 4 },
-  { time: '06:00', transactions: 240, blocks: 12 },
-  { time: '08:00', transactions: 350, blocks: 18 },
-  { time: '10:00', transactions: 420, blocks: 22 },
-  { time: '12:00', transactions: 380, blocks: 19 },
-  { time: '14:00', transactions: 450, blocks: 25 },
-  { time: '16:00', transactions: 520, blocks: 28 },
-  { time: '18:00', transactions: 480, blocks: 24 },
-  { time: '20:00', transactions: 390, blocks: 20 },
-  { time: '22:00', transactions: 280, blocks: 14 },
-];
+interface ChartDataPoint {
+  time: string;
+  transactions: number;
+  blocks: number;
+  hour: number;
+}
 
 const NetworkChart: React.FC = () => {
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchNetworkActivity = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log('Fetching network activity data...');
+        const activityData = await stellarisAPI.getNetworkActivity24h();
+        
+        console.log('Network activity data received:', activityData);
+        setChartData(activityData);
+        
+      } catch (err) {
+        console.error('Failed to fetch network activity data:', err);
+        setError('Failed to load network activity data');
+        
+        // Fallback to mock data in case of error
+        const fallbackData: ChartDataPoint[] = [];
+        for (let i = 0; i < 24; i++) {
+          const hour = (new Date().getHours() - 23 + i + 24) % 24;
+          fallbackData.push({
+            time: `${hour.toString().padStart(2, '0')}:00`,
+            transactions: Math.floor(Math.random() * 50) + 10,
+            blocks: Math.floor(Math.random() * 10) + 1,
+            hour: hour
+          });
+        }
+        setChartData(fallbackData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNetworkActivity();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchNetworkActivity, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="network-chart">
+        <div className="chart-header">
+          <h3 className="chart-title">Network Activity</h3>
+          <div className="loading-spinner">Loading...</div>
+        </div>
+        <div className="chart-container">
+          <div className="loading-placeholder">
+            <p>Loading network activity data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && chartData.length === 0) {
+    return (
+      <div className="network-chart">
+        <div className="chart-header">
+          <h3 className="chart-title">Network Activity</h3>
+          <div className="error-message">{error}</div>
+        </div>
+        <div className="chart-container">
+          <div className="error-placeholder">
+            <p>Unable to load network activity data</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="network-chart">
       <div className="chart-header">
@@ -33,11 +101,16 @@ const NetworkChart: React.FC = () => {
             <span>Blocks</span>
           </div>
         </div>
+        {error && (
+          <div className="chart-error">
+            <small>⚠ {error} (showing fallback data)</small>
+          </div>
+        )}
       </div>
       
       <div className="chart-container">
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={mockData}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
             <XAxis 
               dataKey="time" 
@@ -55,6 +128,11 @@ const NetworkChart: React.FC = () => {
                 borderRadius: '8px',
                 color: '#fff'
               }}
+              formatter={(value: number, name: string) => {
+                const label = name === 'transactions' ? 'Transactions' : 'Blocks';
+                return [value, label];
+              }}
+              labelFormatter={(label: string) => `Time: ${label}`}
             />
             <Line 
               type="monotone" 
