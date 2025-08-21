@@ -27,9 +27,18 @@ const NetworkChart: React.FC = () => {
         console.log('Network activity data received:', activityData);
         setChartData(activityData);
         
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch network activity data:', err);
-        setError('Failed to load network activity data');
+        
+        // Provide more specific error messages
+        let errorMessage = 'Failed to load network activity data';
+        if (err.response?.status === 429) {
+          errorMessage = 'Rate limit exceeded. Using fallback data.';
+        } else if (err.response?.status === 422) {
+          errorMessage = 'Server request limit exceeded. Using fallback data.';
+        }
+        
+        setError(errorMessage);
         
         // Fallback to mock data in case of error
         const fallbackData: ChartDataPoint[] = [];
@@ -50,8 +59,8 @@ const NetworkChart: React.FC = () => {
 
     fetchNetworkActivity();
     
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchNetworkActivity, 5 * 60 * 1000);
+    // Refresh every 10 minutes instead of 5 to reduce API load
+    const interval = setInterval(fetchNetworkActivity, 10 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, []);

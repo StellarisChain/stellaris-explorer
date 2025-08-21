@@ -2,6 +2,12 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://stellaris-node.connor33341.dev';
 
+// Rate limiting configuration
+const RATE_LIMIT_DELAY = 100; // ms between requests
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // ms base delay for retries
+const MAX_BLOCKS_PER_REQUEST = 500; // Reduced from 2000 to avoid 422 errors
+
 // API Response Types
 interface ApiResponse<T> {
   ok: boolean;
@@ -66,9 +72,34 @@ interface AddressInfo {
   pending_spent_outputs: any[] | null;
 }
 
+// Rate limiting utility
+class RateLimiter {
+  private lastRequestTime = 0;
+
+  async waitIfNeeded(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
+      const waitTime = RATE_LIMIT_DELAY - timeSinceLastRequest;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    this.lastRequestTime = Date.now();
+  }
+}
+
+// Sleep utility for delays
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
 class StellarisAPI {
-  private async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+  private rateLimiter = new RateLimiter();
+
+  private async get<T>(endpoint: string, params?: Record<string, any>, retryCount = 0): Promise<T> {
     try {
+      // Apply rate limiting
+      await this.rateLimiter.waitIfNeeded();
+      
       const response = await axios.get(`${API_BASE_URL}${endpoint}`, { params });
       const data = response.data as ApiResponse<T>;
       
@@ -77,8 +108,21 @@ class StellarisAPI {
       }
       
       return data.result;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`API Error for ${endpoint}:`, error);
+      
+      // Retry logic for rate limit errors (429) or network errors
+      if (retryCount < MAX_RETRIES && (
+        error.response?.status === 429 || 
+        error.code === 'NETWORK_ERROR' ||
+        error.code === 'ECONNRESET'
+      )) {
+        const delay = RETRY_DELAY * Math.pow(2, retryCount); // Exponential backoff
+        console.log(`Retrying ${endpoint} in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        await sleep(delay);
+        return this.get<T>(endpoint, params, retryCount + 1);
+      }
+      
       throw error;
     }
   }
@@ -98,7 +142,7 @@ class StellarisAPI {
   }
 
   // Get specific block by ID with optional full transaction details
-  async getBlock(blockId: number, fullTransactions: boolean = true): Promise<Block> {
+  async getBlock(blockId: number, fullTransactions: boolean = false): Promise<Block> {
     const response = await this.get<BlockApiResponse>('/get_block', { 
       block: blockId, 
       full_transactions: fullTransactions 
@@ -109,23 +153,36 @@ class StellarisAPI {
       transactions: []
     };
     
-    // Fetch full transaction details if requested and available
+    // Only fetch full transaction details if explicitly requested and available
+    // Disabled by default to prevent rate limiting issues
     if (fullTransactions && response.full_transactions && response.full_transactions.length > 0) {
-      const fullTransactionPromises = response.full_transactions.map(async (tx) => {
+      console.log(`Fetching ${response.full_transactions.length} transactions for block ${blockId}`);
+      
+      // Fetch transactions sequentially with delays to avoid rate limits
+      const transactions: Transaction[] = [];
+      for (const [index, tx] of response.full_transactions.entries()) {
         try {
-          return await this.getTransaction(tx.hash);
+          const fullTx = await this.getTransaction(tx.hash);
+          transactions.push(fullTx);
+          
+          // Add delay between transaction requests
+          if (index < response.full_transactions.length - 1) {
+            await sleep(RATE_LIMIT_DELAY);
+          }
         } catch (error) {
           console.warn(`Failed to fetch transaction ${tx.hash}:`, error);
-          return {
+          // Use the basic transaction data from the block response
+          transactions.push({
             ...tx,
-            time_mined: block.timestamp,
             block_hash: block.hash,
-            outputs: []
-          } as Transaction;
+            time_mined: block.timestamp,
+            outputs: [],
+            inputs: []
+          });
         }
-      });
+      }
       
-      block.transactions = await Promise.all(fullTransactionPromises);
+      block.transactions = transactions;
     }
     
     return block;
@@ -190,19 +247,37 @@ class StellarisAPI {
 
   async getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
     try {
-      const latestBlocks = await this.getLatestBlocks(Math.min(10, limit)); // Get more blocks to find enough transactions
+      // Get more blocks to find enough transactions, but limit the API calls
+      const latestBlocks = await this.getLatestBlocks(Math.min(20, limit * 2)); 
       const transactions: Transaction[] = [];
       
-      // Get transactions from latest blocks
-      for (const block of latestBlocks) {
-        // Fetch the block with full transaction details
+      // Get transactions from latest blocks - fetch blocks sequentially to avoid rate limits
+      for (const [index, block] of latestBlocks.entries()) {
         try {
-          const fullBlock = await this.getBlock(block.id, true);
-          if (fullBlock.transactions && fullBlock.transactions.length > 0) {
-            transactions.push(...fullBlock.transactions);
+          // Create minimal transaction objects from block data
+          // Since we can't fetch full transaction details due to rate limits,
+          // we'll create basic transaction entries from the block info we already have
+          const blockTransaction: Transaction = {
+            is_coinbase: true,
+            hash: `coinbase-${block.hash}`,
+            block_hash: block.hash,
+            time_mined: block.timestamp,
+            outputs: [{
+              address: block.address,
+              amount: block.reward
+            }],
+            inputs: []
+          };
+          
+          transactions.push(blockTransaction);
+          
+          // Add delay between iterations to respect rate limits
+          if (index < latestBlocks.length - 1) {
+            await sleep(RATE_LIMIT_DELAY);
           }
+          
         } catch (error) {
-          console.warn(`Failed to fetch full block ${block.id}:`, error);
+          console.warn(`Failed to process block ${block.id}:`, error);
           // Continue with next block
         }
         
@@ -277,17 +352,40 @@ class StellarisAPI {
       const now = Date.now() / 1000;
       const twentyFourHoursAgo = now - (24 * 60 * 60);
       
-      // Fetch recent blocks - we'll estimate how many blocks we need for 24 hours
+      // Use smaller batches to avoid rate limits and 422 errors
       // Assuming average block time of ~60 seconds, we need about 1440 blocks for 24 hours
-      const estimatedBlocksFor24h = Math.min(2000, latestBlockId);
+      const estimatedBlocksFor24h = Math.min(1440, latestBlockId); // Reduced estimate
       const offset = Math.max(0, latestBlockId - estimatedBlocksFor24h);
       
-      console.log(`Fetching ${estimatedBlocksFor24h} blocks from offset ${offset} for network activity`);
+      console.log(`Fetching blocks for network activity in smaller batches...`);
       
-      const blocks = await this.getBlocks(offset, estimatedBlocksFor24h);
+      // Fetch blocks in smaller chunks to avoid rate limits
+      const allBlocks: Block[] = [];
+      const chunkSize = Math.min(MAX_BLOCKS_PER_REQUEST, 200); // Use smaller chunks
+      
+      for (let i = 0; i < estimatedBlocksFor24h; i += chunkSize) {
+        const currentOffset = offset + i;
+        const currentLimit = Math.min(chunkSize, estimatedBlocksFor24h - i);
+        
+        try {
+          console.log(`Fetching ${currentLimit} blocks from offset ${currentOffset}`);
+          const blockChunk = await this.getBlocks(currentOffset, currentLimit);
+          allBlocks.push(...blockChunk);
+          
+          // Add a small delay between chunks to respect rate limits
+          if (i + chunkSize < estimatedBlocksFor24h) {
+            await sleep(RATE_LIMIT_DELAY);
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch block chunk at offset ${currentOffset}:`, error);
+          // Continue with other chunks rather than failing completely
+        }
+      }
+      
+      console.log(`Fetched ${allBlocks.length} total blocks for network activity`);
       
       // Filter blocks to last 24 hours
-      const recentBlocks = blocks.filter(block => block.timestamp >= twentyFourHoursAgo);
+      const recentBlocks = allBlocks.filter(block => block.timestamp >= twentyFourHoursAgo);
       
       console.log(`Found ${recentBlocks.length} blocks in the last 24 hours`);
       
@@ -306,7 +404,7 @@ class StellarisAPI {
         const existing = hourlyData.get(hourTimestamp) || { blocks: 0, transactions: 0 };
         
         // For now, assume 1 transaction per block (coinbase)
-        // In the future, you could enhance this by fetching full block details
+        // Avoid fetching individual transactions to prevent rate limits
         const transactionCount = 1;
         
         hourlyData.set(hourTimestamp, {
