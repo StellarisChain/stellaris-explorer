@@ -1,12 +1,18 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://stellaris-node.connor33341.dev';
+// Default to MainNet
+let API_BASE_URL = 'https://stellaris-node.connor33341.dev';
 
 // Rate limiting configuration
 const RATE_LIMIT_DELAY = 100; // ms between requests
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // ms base delay for retries
 const MAX_BLOCKS_PER_REQUEST = 500; // Reduced from 2000 to avoid 422 errors
+
+// Function to update the API base URL (will be called by network context)
+export const setApiBaseUrl = (url: string) => {
+  API_BASE_URL = url;
+};
 
 // API Response Types
 interface ApiResponse<T> {

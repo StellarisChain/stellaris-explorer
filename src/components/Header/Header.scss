@@ -19,11 +19,15 @@
 .header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: $spacing-lg;
   
-  @media (max-width: $mobile) {
+  @media (max-width: 1200px) {
     gap: $spacing-md;
+  }
+  
+  @media (max-width: $mobile) {
+    flex-wrap: wrap;
+    gap: $spacing-sm;
   }
 }
 
@@ -102,12 +106,20 @@
 
 .search-container {
   flex: 1;
-  max-width: 600px;
+  max-width: 500px;
+  min-width: 300px;
+  
+  @media (max-width: 1200px) {
+    max-width: 400px;
+    min-width: 250px;
+  }
   
   @media (max-width: $mobile) {
     order: 3;
     flex-basis: 100%;
     margin-top: $spacing-md;
+    max-width: none;
+    min-width: auto;
   }
 }
 

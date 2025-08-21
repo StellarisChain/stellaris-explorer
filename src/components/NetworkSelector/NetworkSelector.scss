@@ -1,0 +1,250 @@
+@import '../../styles/variables.scss';
+
+.network-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.network-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background: rgba($bg-secondary, 0.8);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  color: $text-primary;
+  cursor: pointer;
+  transition: all $transition-fast;
+  min-width: 160px;
+  
+  &:hover {
+    background: rgba($bg-secondary, 1);
+    border-color: $primary-purple;
+    transform: translateY(-1px);
+  }
+  
+  &:focus {
+    outline: 2px solid $primary-purple;
+    outline-offset: 2px;
+  }
+  
+  @media (max-width: $mobile) {
+    min-width: 140px;
+    padding: $spacing-xs $spacing-sm;
+  }
+}
+
+.network-info {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex: 1;
+}
+
+.network-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.network-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.network-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.network-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $text-muted;
+  
+  &.online {
+    background: $accent-green;
+    box-shadow: 0 0 8px rgba($accent-green, 0.4);
+  }
+  
+  &.offline {
+    background: $accent-red;
+  }
+}
+
+.status-text {
+  font-size: 11px;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.chevron {
+  transition: transform $transition-fast;
+  color: $text-secondary;
+  
+  &.chevron-open {
+    transform: rotate(180deg);
+  }
+}
+
+.network-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: $bg-secondary;
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  box-shadow: $shadow-lg;
+  margin-top: $spacing-xs;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  
+  @media (max-width: $mobile) {
+    left: -20px;
+    right: -20px;
+  }
+}
+
+.dropdown-header {
+  padding: $spacing-md $spacing-md $spacing-sm;
+  border-bottom: 1px solid $border-primary;
+  
+  h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-primary;
+  }
+}
+
+.network-list {
+  padding: $spacing-xs 0;
+}
+
+.network-option {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all $transition-fast;
+  
+  &:hover:not(:disabled) {
+    background: rgba($primary-purple, 0.1);
+  }
+  
+  &.selected {
+    background: rgba($primary-purple, 0.2);
+    
+    .option-name {
+      color: $primary-purple;
+      font-weight: 600;
+    }
+  }
+  
+  &.unavailable {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    .option-name,
+    .option-description {
+      color: $text-muted;
+    }
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  text-align: left;
+}
+
+.option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.option-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-primary;
+  line-height: 1.2;
+}
+
+.option-description {
+  font-size: 12px;
+  color: $text-secondary;
+  line-height: 1.2;
+}
+
+.option-status {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// Animation for dropdown
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.network-dropdown {
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+// Responsive adjustments
+@media (max-width: $mobile) {
+  .network-selector-trigger {
+    .network-details {
+      .status-text {
+        display: none; // Hide status text on mobile to save space
+      }
+    }
+  }
+  
+  .network-dropdown {
+    min-width: 200px;
+  }
+}

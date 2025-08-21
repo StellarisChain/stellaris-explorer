@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Menu, X } from 'lucide-react';
+import NetworkSelector from '../NetworkSelector/NetworkSelector';
 import './Header.scss';
 
 const Header: React.FC = () => {
@@ -68,6 +69,9 @@ const Header: React.FC = () => {
               </button>
             </form>
           </div>
+
+          {/* Network Selector */}
+          <NetworkSelector />
 
           {/* Navigation */}
           <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
