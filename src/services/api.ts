@@ -202,7 +202,17 @@ class StellarisAPI {
 
   // Get current coin price and historical data
   async getCoinPrice(): Promise<CoinPrice> {
-    return this.get<CoinPrice>('/get_coin_price');
+    try {
+      // Apply rate limiting
+      await this.rateLimiter.waitIfNeeded();
+      
+      const response = await axios.get(`${API_BASE_URL}/price`);
+      // The /price endpoint returns data directly, not wrapped in ApiResponse format
+      return response.data as CoinPrice;
+    } catch (error: any) {
+      console.error('API Error for /price:', error);
+      throw error;
+    }
   }
 
   // Get transaction by hash
