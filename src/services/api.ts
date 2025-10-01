@@ -78,6 +78,12 @@ interface AddressInfo {
   pending_spent_outputs: any[] | null;
 }
 
+interface CoinPrice {
+  price: number;
+  historical_prices: number[];
+  change_24h: number;
+}
+
 // Rate limiting utility
 class RateLimiter {
   private lastRequestTime = 0;
@@ -192,6 +198,11 @@ class StellarisAPI {
     }
     
     return block;
+  }
+
+  // Get current coin price and historical data
+  async getCoinPrice(): Promise<CoinPrice> {
+    return this.get<CoinPrice>('/get_coin_price');
   }
 
   // Get transaction by hash

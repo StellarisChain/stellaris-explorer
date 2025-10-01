@@ -37,7 +37,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
   return (
     <div className="recent-transactions">
       <div className="recent-transactions-list">
-        {transactions.filter(tx => tx && tx.hash).map((tx) => (
+        {transactions.filter(tx => tx && tx.hash && !tx.is_coinbase).map((tx) => (
           <Link 
             key={tx.hash} 
             to={`/tx/${tx.hash}`}
@@ -55,11 +55,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
             
             <div className="transaction-details">
               <div className="transaction-type">
-                {tx.is_coinbase ? (
-                  <span className="coinbase-badge">Coinbase</span>
-                ) : (
-                  <span className="transfer-badge">Transfer</span>
-                )}
+                <span className="transfer-badge">Transfer</span>
               </div>
               
               <div className="transaction-outputs">
