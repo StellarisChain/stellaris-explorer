@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QuasarWallet from '../../../quasar/src/lib/browser/wallet-injection';
 import './QuasarInterface.scss';
 
@@ -12,6 +13,7 @@ declare global {
 const QuasarInterface: React.FC = () => {
   const [isQuasarAvailable, setIsQuasarAvailable] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if window.quasar exists and its connection status
@@ -54,8 +56,13 @@ const QuasarInterface: React.FC = () => {
     if (isQuasarAvailable && window.quasar) {
       try {
         if (isConnected) {
-          // If already connected, show account info or disconnect
-          console.log('Quasar wallet is already connected');
+          // If already connected, navigate to the wallet address page
+          const walletAddress = window.quasar.address;
+          if (walletAddress) {
+            navigate(`/address/${walletAddress}`);
+          } else {
+            console.error('No wallet address available');
+          }
         } else {
           // Use the proper connect method from QuasarWallet
           await window.quasar.connect();
@@ -74,14 +81,14 @@ const QuasarInterface: React.FC = () => {
     if (!isQuasarAvailable) {
       return 'Install Quasar';
     }
-    return isConnected ? 'Quasar Connected' : 'Connect Quasar';
+    return isConnected ? 'View Wallet' : 'Connect Quasar';
   };
 
   return (
     <button 
       className={`quasar-interface ${isConnected ? 'connected' : ''}`}
       onClick={handleClick}
-      aria-label={isQuasarAvailable ? (isConnected ? "Quasar Wallet Connected" : "Connect Quasar Wallet") : "Install Quasar Wallet"}
+      aria-label={isQuasarAvailable ? (isConnected ? "View Quasar Wallet" : "Connect Quasar Wallet") : "Install Quasar Wallet"}
     >
       <div className="quasar-logo">
         <img 
